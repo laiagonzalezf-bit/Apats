@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Llibre d'Àpats i Receptes</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 15px; 
+            background-color: #f4f7f6; 
+        }
+        h1 { text-align: center; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 25px; font-size: 1.8em;}
+        h2 { color: #2980b9; margin-top: 30px; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px; font-size: 1.5em; }
+        h3 { color: #d35400; margin-bottom: 10px; }
+        h4 { color: #16a085; margin-bottom: 5px; margin-top: 15px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; gap: 15px; } }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        
+        .generator-box { background: #e8f4f8; border-left: 5px solid #3498db; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
+        
+        .inputs-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        @media (min-width: 768px) { .inputs-container { flex-direction: row; flex-wrap: wrap; } }
+        
+        .input-group { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #bdc3c7; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: 1;}
+        .input-group input { width: 60px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        
+        .status-msg { font-weight: bold; padding: 12px; border-radius: 5px; background: #ffeaa7; color: #d35400; text-align: center; margin-bottom: 15px; border: 1px solid #fdcb6e; }
+        .status-msg.ok { background: #dff9fb; color: #27ae60; border-color: #badc58; }
+
+        .meal-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; background: white; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; }
+        
+        /* Disseny especial per fer els botons fàcils de tocar amb el dit al mòbil */
+        .meal-item label { 
+            cursor: pointer; display: flex; align-items: center; gap: 12px; 
+            padding: 15px 12px; margin-bottom: 2px; 
+            background: #fbfbfb; border: 1px solid #eef2f3; border-radius: 8px; 
+            transition: background 0.2s, border-color 0.2s;
+            font-size: 16px;
+        }
+        .meal-item label:hover, .meal-item input:checked + label { background: #f1f2f6; border-color: #3498db; }
+        .meal-item input[type="checkbox"] { transform: scale(1.4); margin-right: 5px; }
+        
+        .btn { background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; transition: background 0.3s; }
+        .btn:hover { background: #2ecc71; }
+        .btn-print { background: #34495e; margin-top: 15px; display: inline-flex; justify-content: center; align-items: center; }
+        .btn-print:hover { background: #2c3e50; }
+        
+        .shopping-list { background: #fff3e0; padding: 20px; border-radius: 8px; border: 2px dashed #e67e22; margin-top: 20px; display: none; }
+        .shopping-list ul { list-style-type: none; padding-left: 0; }
+        .shopping-list li { border-bottom: 1px solid #f39c12; padding: 12px 0; font-size: 16px; }
+        .shopping-list li:before { content: "🛒 "; }
+        .shopping-list li.esmorzar:before { content: "🍞 "; }
+
+        .recipe-card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #e67e22; }
+
+        @media print {
+            body * { visibility: hidden; }
+            #shoppingListOutput, #shoppingListOutput * { visibility: visible; }
+            #shoppingListOutput { position: absolute; left: 0; top: 0; width: 100%; border: none; background: white; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="no-print">Llibre d'Àpats i Receptes</h1>
+
+    <!-- GENERADOR DE MENÚS -->
+    <div class="generator-box no-print">
+        <h2 style="margin-top:0;">🛒 Generador de Llista de la Compra</h2>
+        
+        <div class="inputs-container">
+            <div class="input-group">
+                <label for="numPersones">👥 <strong>Persones:</strong></label>
+                <input type="number" id="numPersones" value="4" min="1" onchange="actualitzarEstat()">
+            </div>
+            <div class="input-group">
+                <label for="numEsmorzars">☕ <strong>Esmorzars a fer:</strong></label>
+                <input type="number" id="numEsmorzars" value="2" min="0" onchange="actualitzarEstat()">
+            </div>
+            <div class="input-group">
+                <label for="numApats">🍽️ <strong>Total Dinars+Sopars:</strong></label>
+                <input type="number" id="numApats" value="4" min="1" onchange="actualitzarEstat()">
+            </div>
+        </div>
+
+        <div id="estatTriat" class="status-msg">
+            Has de triar 4 àpats de la llista de baix. Pots combinar-los com vulguis.
+        </div>
+
+        <div class="grid">
+            <div>
+                <h4 style="margin-top: 0;">🥘 Opcions de Dinars</h4>
+                <div class="meal-list" id="mealContainerDinars"></div>
+            </div>
+            <div>
+                <h4 style="margin-top: 0;">🍲 Opcions de Sopars</h4>
+                <div class="meal-list" id="mealContainerSopars"></div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="generarLlista()">📋 Generar Llista de la Compra</button>
+
+        <div id="shoppingListOutput" class="shopping-list">
+            <h3 style="margin-top:0;">📝 Llista de la Compra Única</h3>
+            <div id="shoppingListContent"></div>
+            <button class="btn btn-print no-print" onclick="window.print()">🖨️ Imprimir Llista per anar al Súper</button>
+        </div>
+    </div>
+
+    <!-- RECEPTES COMPLETES AMB PASSOS -->
+    <h2 class="no-print">Receptes detallades</h2>
+    
+    <div class="recipe-card no-print">
+        <h3>Trinxat</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>1 col d’hivern (o col verda) mitjana</li><li>4-5 patates mitjanes</li><li>150-200 g de cansalada (amb o sense veta)</li><li>100 g de bacon</li><li>1 botifarra negra</li><li>Oli d’oliva verge extra, sal i pebre</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Preparar les verdures: Renta bé la col i treu-ne les fulles externes. Talla-la en trossos grans. Pela les patates a daus grossos.</li>
+            <li>Bullir: En una olla amb aigua salada, bull la col i les patates 20-25 minuts. Escorre-les.</li>
+            <li>Sofregit: Talla la cansalada i el bacon. En una paella gran, daura'ls amb oli. Afegeix la botifarra negra a trossos i cuina uns minuts.</li>
+            <li>Trinxar: Afegeix les patates i la col a la paella i aixafa-ho tot amb una forquilla.</li>
+            <li>Daurar: Pressiona la barreja per fer una crosta cruixent a sota.</li>
+        </ol>
+    </div>
+
+    <div class="recipe-card no-print">
+        <h3>Mongetes amb rossellones</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>1 pot de mongetes blanques</li><li>500 g de rossellones fresques</li><li>3-4 grans d’all</li><li>150 ml de vi blanc</li><li>Oli d’oliva verge extra, sal</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Rentar el pot de mongetes per treure l'espumeta.</li>
+            <li>Triturar l'all ben petit i posar-lo en una paella amb oli en fred.</li>
+            <li>Posar les rossellones amb aigua i sal per netejar-les. Tirar les petxines a l’oli calent.</li>
+            <li>Tirar el vi blanc. Tapar i deixar obrir al vapor.</li>
+            <li>Afegir les mongetes, remenar i deixar coure una estona.</li>
+        </ol>
+    </div>
+
+    <div class="recipe-card no-print">
+        <h3>Sípia amb patates</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>1 kg de sípia neta</li><li>5 patates</li><li>1 ceba gran, 3 grans d'all, 1 tomàquet madur, 1 fulla de llorer</li><li>150 ml de vi blanc i 700 ml de brou</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Segellar la sípia a foc fort 2-3 minuts. Retira i reserva.</li>
+            <li>Fer el sofregit amb la ceba i l’all picats. Afegir el tomàquet ratllat i coure 5 minuts.</li>
+            <li>Incorporar la sípia, el llorer i el vi blanc. Evaporar 5 minuts.</li>
+            <li>Afegir les patates "esquerdades" i el brou just per cobrir.</li>
+            <li>Coure a foc suau 25-30 minuts. Rectificar de sal i afegir julivert.</li>
+        </ol>
+    </div>
+
+    <div class="recipe-card no-print">
+        <h3>Carn amb albergínia</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>750g de Llata de vedella</li><li>1 albergínia</li><li>Ceba picada i tomàquet ratllat</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Sala, enfarina i fregeix la carn per segellar-la. Reserva.</li>
+            <li>Talla l'albergínia, sala per treure aigua, enfarina i fregeix. Reserva.</li>
+            <li>Fes un sofregit amb la ceba i el tomàquet a foc suau.</li>
+            <li>Incorpora la carn, cobreix d'aigua i cou 20-30 minuts. Afegeix l'albergínia 15 minuts més.</li>
+        </ol>
+    </div>
+
+    <div class="recipe-card no-print">
+        <h3>Arròs integral</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>1 pebrot vermell, 1 verd, 1 ceba/porro, 2 pastanagues, 2 carxofes, bolets, 1 gra d'all.</li><li>4.5 tasses d’arròs integral.</li><li>Cacauets, tomàquet fregit, Curry, comí.</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Tallar totes les verdures (carxofes amb llimona perquè no s'oxidin).</li>
+            <li>Fer el sofregit començant per la ceba i l'all. Tirar bastant curry.</li>
+            <li>Rentar l'arròs integral i afegir-lo al sofregit perquè fregeixi una mica.</li>
+            <li>Tirar aigua calenta (3 mides d'aigua per tassa d'arròs).</li>
+            <li>Bullir a foc lent i apagar quan quedi poc líquid per deixar-lo reposar.</li>
+        </ol>
+    </div>
+
+    <div class="recipe-card no-print">
+        <h3>Amanida de cigrons amb salsa de iogurt</h3>
+        <h4>Ingredients:</h4>
+        <ul><li>2 pots de cigrons, 180g rúcula/espinacs, 4 tomàquets, 1 cogombre, olives, llavors.</li><li>160g de Feta, 650g de pollastre.</li><li>Salsa: 2 iogurts naturals, llimona, oli, comí/orenga.</li></ul>
+        <h4>Passos:</h4>
+        <ol>
+            <li>Salsa: Barreja iogurt, llimona, oli, espècies, sal i pebre. Reserva a la nevera.</li>
+            <li>Marinada: Condimenta el pollastre i reposa 5 minuts. Talla totes les verdures.</li>
+            <li>Cuinar el pollastre a la paella en 2 tandes (3-4 minuts per costat).</li>
+            <li>Muntar bowls amb base verda, cigrons, verdures, llavors i el pollastre/feta a dalt.</li>
+        </ol>
+    </div>
+
+    <script>
+        // Dades Estructurades
+        const receptariEstructurat = {
+            "Trinxat": [
+                { nom: "cols d’hivern mitjanes", quantitat: 1, unitat: "u" },
+                { nom: "patates", quantitat: 4.5, unitat: "u" },
+                { nom: "cansalada", quantitat: 175, unitat: "g" },
+                { nom: "bacon", quantitat: 100, unitat: "g" },
+                { nom: "botifarres negres", quantitat: 1, unitat: "u" },
+                { nom: "Oli d'oliva i sal (Bàsics)", quantitat: 0, unitat: "" }
+            ],
+            "Mongetes amb rossellones": [
+                { nom: "mongetes blanques", quantitat: 1, unitat: "pots" },
+                { nom: "rossellones fresques", quantitat: 500, unitat: "g" },
+                { nom: "grans d'all", quantitat: 3.5, unitat: "u" },
+                { nom: "vi blanc", quantitat: 150, unitat: "ml" }
+            ],
+            "Sípia amb patates": [
+                { nom: "sípia neta", quantitat: 1, unitat: "kg" },
+                { nom: "patates", quantitat: 5, unitat: "u" },
+                { nom: "cebes", quantitat: 1, unitat: "u" },
+                { nom: "grans d'all", quantitat: 3, unitat: "u" },
+                { nom: "tomàquets", quantitat: 1, unitat: "u" },
+                { nom: "fulles de llorer", quantitat: 1, unitat: "u" },
+                { nom: "vi blanc", quantitat: 150, unitat: "ml" },
+                { nom: "brou de peix/verdures", quantitat: 700, unitat: "ml" }
+            ],
+            "Carn amb albergínia": [
+                { nom: "Llata de vedella", quantitat: 750, unitat: "g" },
+                { nom: "albergínies", quantitat: 1, unitat: "u" },
+                { nom: "cebes", quantitat: 1, unitat: "u" },
+                { nom: "tomàquets", quantitat: 1, unitat: "u" }
+            ],
+            "Arròs integral": [
+                { nom: "pebrots vermells", quantitat: 1, unitat: "u" },
+                { nom: "pebrots verds", quantitat: 1, unitat: "u" },
+                { nom: "cebes (o porros)", quantitat: 1, unitat: "u" },
+                { nom: "pastanagues", quantitat: 2, unitat: "u" },
+                { nom: "carxofes", quantitat: 2, unitat: "u" },
+                { nom: "bolets o xampinyons", quantitat: 200, unitat: "g" },
+                { nom: "grans d'all", quantitat: 1, unitat: "u" },
+                { nom: "arròs integral", quantitat: 4.5, unitat: "tasses" },
+                { nom: "cacauets pelats", quantitat: 50, unitat: "g" },
+                { nom: "tomàquet fregit", quantitat: 100, unitat: "g" },
+                { nom: "Curry i espècies", quantitat: 0, unitat: "" }
+            ],
+            "Amanida de cigrons amb salsa de iogurt": [
+                { nom: "cigrons cuits", quantitat: 2, unitat: "pots" },
+                { nom: "rúcula o espinacs", quantitat: 180, unitat: "g" },
+                { nom: "tomàquets", quantitat: 4, unitat: "u" },
+                { nom: "cogombres", quantitat: 1, unitat: "u" },
+                { nom: "olives", quantitat: 18, unitat: "u" },
+                { nom: "llavors variades", quantitat: 3, unitat: "cullerades" },
+                { nom: "formatge Feta", quantitat: 160, unitat: "g" },
+                { nom: "pollastre", quantitat: 650, unitat: "g" },
+                { nom: "iogurts naturals", quantitat: 2, unitat: "u" }
+            ]
+        };
+
+        const llistaDinars = [
+            "Arròs integral", "Carn amb albergínia", "Mongetes amb rossellones", "Trinxat",
+            "Macarrons amb carn picada", "Quiche", "Amanida de pasta", "Cigrons amb botifarra", 
+            "Amanida i tall", "Estofat de mandonguilles amb patata", "Pollastre amb ceba i tomàquet", 
+            "Mandonguilles amb patates", "Arròs amb gambes", "Pollastre amb ametlles", "Lassanya de verdures"
+        ];
+
+        const llistaSopars = [
+            "Sípia amb patates", "Amanida de cigrons amb salsa de iogurt",
+            "Peixet fregit i amanida", "Peix al forn amb patates", "Truita de patates", "Poke", 
+            "Espinacs amb panses", "Mongeta verda amb carn picada", "Crema de verdures", "Verdures al forn", 
+            "Sopa", "Sopa de bolets", "Pizzes", "Escalivada", "Truita francesa", "Truita de ceba", "Truita de carbassó/carxofa", "Mongeta plana amb patates"
+        ];
+
+        function renderitzarLlistes() {
+            const contenidorDinars = document.getElementById('mealContainerDinars');
+            const contenidorSopars = document.getElementById('mealContainerSopars');
+            
+            llistaDinars.forEach(apat => {
+                const div = document.createElement('div');
+                div.className = 'meal-item';
+                div.innerHTML = `<label><input type="checkbox" value="${apat}" onchange="actualitzarEstat()"> ${apat}</label>`;
+                contenidorDinars.appendChild(div);
+            });
+
+            llistaSopars.forEach(apat => {
+                const div = document.createElement('div');
+                div.className = 'meal-item';
+                div.innerHTML = `<label><input type="checkbox" value="${apat}" onchange="actualitzarEstat()"> ${apat}</label>`;
+                contenidorSopars.appendChild(div);
+            });
+            actualitzarEstat();
+        }
+
+        function actualitzarEstat() {
+            const apatsObjectiu = parseInt(document.getElementById('numApats').value) || 0;
+            const dinarsTriats = document.querySelectorAll('#mealContainerDinars input:checked').length;
+            const soparsTriats = document.querySelectorAll('#mealContainerSopars input:checked').length;
+            const totalsTriats = dinarsTriats + soparsTriats;
+            
+            const divEstat = document.getElementById('estatTriat');
+            
+            if (totalsTriats === apatsObjectiu) {
+                divEstat.innerHTML = `✅ Perfecte! Has seleccionat exactament els ${apatsObjectiu} àpats principals.`;
+                divEstat.className = "status-msg ok";
+            } else if (totalsTriats < apatsObjectiu) {
+                divEstat.innerHTML = `Et falten per triar: <strong>${apatsObjectiu - totalsTriats} àpats</strong>. (Pots combinar de les dues llistes com vulguis).`;
+                divEstat.className = "status-msg";
+            } else {
+                divEstat.innerHTML = `⚠️ T'has passat! Has triat <strong>${totalsTriats - apatsObjectiu} àpats de més</strong>.`;
+                divEstat.className = "status-msg";
+            }
+        }
+
+        function generarLlista() {
+            const apatsObjectiu = parseInt(document.getElementById('numApats').value) || 0;
+            const esmorzars = parseInt(document.getElementById('numEsmorzars').value) || 0;
+            const persones = parseInt(document.getElementById('numPersones').value) || 1;
+            const multiplicador = persones / 4; 
+            
+            const dinarsTriats = document.querySelectorAll('#mealContainerDinars input:checked');
+            const soparsTriats = document.querySelectorAll('#mealContainerSopars input:checked');
+            const seleccionats = [...dinarsTriats, ...soparsTriats].map(cb => cb.value);
+            
+            if (seleccionats.length !== apatsObjectiu) {
+                const seguir = confirm(`Has triat ${seleccionats.length} àpats en total, però havies indicat que en necessitàveu ${apatsObjectiu}.\n\nN'estàs segur que vols generar la llista tal qual?`);
+                if (!seguir) return;
+            }
+
+            const llistaDiv = document.getElementById('shoppingListContent');
+            llistaDiv.innerHTML = ''; 
+            
+            let ingredientsAgrupats = {};
+            let apatsSenseIngredients = [];
+
+            seleccionats.forEach(apat => {
+                if (receptariEstructurat[apat]) {
+                    receptariEstructurat[apat].forEach(ing => {
+                        let nom = ing.nom;
+                        if (!ingredientsAgrupats[nom]) {
+                            ingredientsAgrupats[nom] = { quantitat: 0, unitat: ing.unitat };
+                        }
+                        ingredientsAgrupats[nom].quantitat += (ing.quantitat * multiplicador);
+                    });
+                } else {
+                    apatsSenseIngredients.push(apat);
+                }
+            });
+
+            let html = '<ul>';
+            
+            if (esmorzars > 0) {
+                html += `<li class="esmorzar"><strong>Esmorzar:</strong> Pa i embotit per a ${persones} persones durant ${esmorzars} esmorzars.</li>`;
+            }
+
+            let nomsOrdenats = Object.keys(ingredientsAgrupats).sort(); 
+            nomsOrdenats.forEach(nom => {
+                let dades = ingredientsAgrupats[nom];
+                if (dades.quantitat === 0) {
+                    html += `<li>${nom}</li>`;
+                } else {
+                    let quantitatFormatejada = Math.round(dades.quantitat * 10) / 10; 
+                    if (dades.unitat === "u") {
+                        html += `<li><strong>${quantitatFormatejada}</strong> ${nom}</li>`;
+                    } else {
+                        html += `<li><strong>${quantitatFormatejada} ${dades.unitat}</strong> de ${nom}</li>`;
+                    }
+                }
+            });
+            html += '</ul>';
+
+            if (apatsSenseIngredients.length > 0) {
+                html += `<div style="margin-top:20px; padding:15px; background-color: #fce4ec; border-radius: 8px; font-size: 15px; line-height: 1.4;">
+                            <strong>🥘 A tenir en compte:</strong> Hi ha àpats escollits sense quantitats registrades. Caldrà comprar-ho a ull:<br>
+                            <em style="display:block; margin-top:5px;">${apatsSenseIngredients.join(' • ')}</em>
+                         </div>`;
+            }
+
+            llistaDiv.innerHTML = html;
+            document.getElementById('shoppingListOutput').style.display = 'block';
+            
+            // Fer scroll suau cap a la llista
+            document.getElementById('shoppingListOutput').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        renderitzarLlistes();
+    </script>
+</body>
+</html>
