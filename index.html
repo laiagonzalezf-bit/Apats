@@ -24,7 +24,7 @@
         
         .generator-box { background: #e8f4f8; border-left: 5px solid #3498db; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         
-        .inputs-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .inputs-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; }
         @media (min-width: 768px) { .inputs-container { flex-direction: row; flex-wrap: wrap; } }
         
         .input-group { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #bdc3c7; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
@@ -50,6 +50,11 @@
             -webkit-appearance: none; margin: 0;
         }
         
+        .random-container { text-align: center; margin: 20px 0; }
+        .btn-random { background: #8e44ad; color: white; border: none; padding: 12px 25px; font-size: 16px; font-weight: bold; border-radius: 30px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 8px; }
+        .btn-random:hover { background: #9b59b6; transform: translateY(-1px); }
+        .btn-random:active { transform: translateY(1px); box-shadow: 0 2px 3px rgba(0,0,0,0.1); }
+
         .status-msg { font-weight: bold; padding: 12px; border-radius: 5px; background: #ffeaa7; color: #d35400; text-align: center; margin-bottom: 15px; border: 1px solid #fdcb6e; transition: all 0.3s ease; }
         .status-msg.ok { background: #dff9fb; color: #27ae60; border-color: #badc58; }
 
@@ -65,13 +70,16 @@
         .meal-item label:hover, .meal-item input:checked + label { background: #f1f2f6; border-color: #3498db; }
         .meal-item input[type="checkbox"] { transform: scale(1.4); margin-right: 5px; }
         
-        .buttons-container { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        @media (min-width: 768px) { .buttons-container { flex-direction: row; } }
+        /* Estils del Visualitzador de Menú */
+        .menu-schedule { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; margin-bottom: 25px; }
+        @media (min-width: 768px) { .menu-schedule { flex-direction: row; flex-wrap: wrap; } }
+        .menu-day { background: white; border-radius: 8px; padding: 15px; border-left: 5px solid #3498db; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; min-width: 220px;}
+        .day-title { font-weight: bold; color: #2c3e50; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; font-size: 1.1em;}
+        .day-meals { display: flex; flex-direction: column; gap: 6px; }
+        .day-meals div { font-size: 15px; }
         
-        .btn { flex: 1; background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);}
+        .btn { background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: background 0.3s; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);}
         .btn:hover { background: #2ecc71; }
-        .btn-random { background: #8e44ad; }
-        .btn-random:hover { background: #9b59b6; }
         
         .shopping-list { background: #fff3e0; padding: 20px; border-radius: 8px; border: 2px dashed #e67e22; margin-top: 20px; display: none; }
         .shopping-list ul { list-style-type: none; padding-left: 0; margin-bottom: 0;}
@@ -83,13 +91,20 @@
         .recipe-card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #e67e22; }
         .recipe-card ul, .recipe-card ol { padding-left: 20px; }
         .recipe-card li { margin-bottom: 8px; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #shoppingListOutput, #shoppingListOutput * { visibility: visible; }
+            #shoppingListOutput { position: absolute; left: 0; top: 0; width: 100%; border: none; background: white; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
-    <h1>Llibre d'Àpats i Receptes</h1>
+    <h1 class="no-print">Llibre d'Àpats i Receptes</h1>
 
     <!-- GENERADOR DE MENÚS -->
-    <div class="generator-box">
+    <div class="generator-box no-print">
         <h2 style="margin-top:0;">🛒 Generador de Llista de la Compra</h2>
         
         <div class="inputs-container">
@@ -119,6 +134,10 @@
             </div>
         </div>
 
+        <div class="random-container">
+            <button class="btn-random" onclick="triarAleatori()">🎲 Tria per mi (Menú Aleatori)</button>
+        </div>
+
         <div id="estatTriat" class="status-msg">
             Has de triar 4 àpats de la llista de baix. Pots combinar-los com vulguis.
         </div>
@@ -134,10 +153,10 @@
             </div>
         </div>
 
-        <div class="buttons-container">
-            <button class="btn btn-random" onclick="triarAleatori()">🎲 Menú Aleatori</button>
-            <button class="btn" onclick="generarLlista()">📋 Generar Llista i Receptes</button>
-        </div>
+        <h3 style="margin-top: 35px; color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 5px;">📅 Visualitzador del Menú</h3>
+        <div id="menuVisualitzador"></div>
+
+        <button class="btn" onclick="generarLlista()" style="margin-top: 20px;">📋 Generar Llista i Receptes</button>
 
         <div id="shoppingListOutput" class="shopping-list">
             <h3 style="margin-top:0;">📝 Llista de la Compra Única</h3>
@@ -147,7 +166,7 @@
 
     <!-- CONTENIDOR DINÀMIC PER A LES RECEPTES -->
     <div id="recipesOutputContainer" style="display: none;">
-        <h2>Receptes seleccionades</h2>
+        <h2 class="no-print">Receptes seleccionades</h2>
         <div id="recipesOutput"></div>
     </div>
 
@@ -215,10 +234,17 @@
                 { nom: "patates", quantitat: 2, unitat: "u" },
                 { nom: "nata líquida", quantitat: 250, unitat: "ml" },
                 { nom: "Oli, sal, pebre i aigua (Bàsics)", quantitat: 0, unitat: "" }
+            ],
+            "Amanida de mongeta verda amb feta i cherrys": [
+                { nom: "mongeta verda", quantitat: 600, unitat: "g" },
+                { nom: "tomàquets cherry", quantitat: 250, unitat: "g" },
+                { nom: "formatge Feta", quantitat: 200, unitat: "g" },
+                { nom: "olives negres", quantitat: 50, unitat: "g" },
+                { nom: "Oli d'oliva, sal i orenga (Bàsics)", quantitat: 0, unitat: "" }
             ]
         };
 
-        // Passos de l'Excel + Vichissoisse
+        // Passos de preparació
         const passosReceptes = {
             "Trinxat": `
                 <ol>
@@ -284,18 +310,26 @@
                     <li>Posar-hi aigua just fins que cobreixi els ingredients i salpebrar.</li>
                     <li>Coure-ho: si fas servir olla exprés, són 15 minuts. En olla normal, cuinar-ho fins que les patates estiguin ben fetes.</li>
                     <li>Després batre-ho tot bé, tirar la nata líquida, barrejar per integrar-ho i acabar d'ajustar de sal. Deixar refredar.</li>
+                </ol>`,
+            "Amanida de mongeta verda amb feta i cherrys": `
+                <ol>
+                    <li>Coure les mongetes: Neteja-les i talla'n les puntes. Bull-les en aigua amb sal uns 10-12 minuts (que quedin al dente).</li>
+                    <li>Refredar: Escorre-les i passa-les per aigua ben freda perquè mantinguin el color verd viu i frenar-ne la cocció.</li>
+                    <li>Tallar: Talla els cherrys per la meitat i talla el formatge Feta a daus.</li>
+                    <li>Muntar: En un bol gran, barreja les mongetes, els cherrys i les olives. Amaneix-ho al gust amb un bon raig d'oli d'oliva, sal i orenga, i remena-ho bé.</li>
+                    <li>El Feta: Afegeix els daus de formatge Feta just al final i remena-ho molt suaument perquè no es desfaci.</li>
                 </ol>`
         };
 
         const llistaDinars = [
-            "Arròs integral", "Carn amb albergínia", "Mongetes amb rossellones", "Trinxat", "Vichissoisse",
+            "Arròs integral", "Carn amb albergínia", "Mongetes amb rossellones", "Trinxat", "Vichissoisse", "Amanida de mongeta verda amb feta i cherrys",
             "Macarrons amb carn picada", "Quiche", "Amanida de pasta", "Cigrons amb botifarra", 
             "Amanida i tall", "Estofat de mandonguilles amb patata", "Pollastre amb ceba i tomàquet", 
             "Mandonguilles amb patates", "Arròs amb gambes", "Pollastre amb ametlles", "Lassanya de verdures"
         ];
 
         const llistaSopars = [
-            "Sípia amb patates", "Amanida de cigrons amb salsa de iogurt", "Vichissoisse",
+            "Sípia amb patates", "Amanida de cigrons amb salsa de iogurt", "Vichissoisse", "Amanida de mongeta verda amb feta i cherrys",
             "Peixet fregit i amanida", "Peix al forn amb patates", "Truita de patates", "Poke", 
             "Espinacs amb panses", "Mongeta verda amb carn picada", "Crema de verdures", "Verdures al forn", 
             "Sopa", "Sopa de bolets", "Pizzes", "Escalivada", "Truita francesa", "Truita de ceba", "Truita de carbassó/carxofa", "Mongeta plana amb patates"
@@ -342,15 +376,48 @@
             const divEstat = document.getElementById('estatTriat');
             
             if (totalsTriats === apatsObjectiu) {
-                divEstat.innerHTML = `✅ Perfecte! Has seleccionat exactament els ${apatsObjectiu} àpats principals.`;
+                divEstat.innerHTML = `✅ Perfecte! Has seleccionat exactament els ${apatsObjectiu} àpats.`;
                 divEstat.className = "status-msg ok";
             } else if (totalsTriats < apatsObjectiu) {
-                divEstat.innerHTML = `Et falten per triar: <strong>${apatsObjectiu - totalsTriats} àpats</strong>. (Pots combinar de les dues llistes com vulguis).`;
+                divEstat.innerHTML = `Et falten per triar: <strong>${apatsObjectiu - totalsTriats} àpats</strong>.`;
                 divEstat.className = "status-msg";
             } else {
                 divEstat.innerHTML = `⚠️ T'has passat! Has triat <strong>${totalsTriats - apatsObjectiu} àpats de més</strong>.`;
                 divEstat.className = "status-msg";
             }
+
+            actualitzarVisualitzadorMenu();
+        }
+
+        function actualitzarVisualitzadorMenu() {
+            const dinarsTriats = Array.from(document.querySelectorAll('#mealContainerDinars input:checked')).map(cb => cb.value);
+            const soparsTriats = Array.from(document.querySelectorAll('#mealContainerSopars input:checked')).map(cb => cb.value);
+            const visualitzadorDiv = document.getElementById('menuVisualitzador');
+
+            if (dinarsTriats.length === 0 && soparsTriats.length === 0) {
+                visualitzadorDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic; text-align: center; margin-bottom: 20px;">Tria àpats de les llistes o fes clic a "Menú Aleatori" per veure aquí la proposta.</p>';
+                return;
+            }
+
+            const maxDies = Math.max(dinarsTriats.length, soparsTriats.length);
+            let html = '<div class="menu-schedule">';
+
+            for (let i = 0; i < maxDies; i++) {
+                let dinarText = dinarsTriats[i] || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots menjar fora)</span>';
+                let soparText = soparsTriats[i] || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots sopar a fora)</span>';
+
+                html += `
+                    <div class="menu-day">
+                        <div class="day-title">🗓️ Dia ${i + 1}</div>
+                        <div class="day-meals">
+                            <div><strong>🥘 Dinar:</strong><br>${dinarText}</div>
+                            <div style="margin-top:5px;"><strong>🍲 Sopar:</strong><br>${soparText}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            visualitzadorDiv.innerHTML = html;
         }
 
         function triarAleatori() {
@@ -364,7 +431,6 @@
             const meitatDinars = Math.ceil(apatsObjectiu / 2);
             const meitatSopars = Math.floor(apatsObjectiu / 2);
 
-            // Funció per barrejar i triar 'n' elements aleatoris
             function triarN(array, n) {
                 const barrejats = [...array].sort(() => 0.5 - Math.random());
                 return barrejats.slice(0, n);
@@ -396,7 +462,6 @@
             const soparsTriats = document.querySelectorAll('#mealContainerSopars input:checked');
             const seleccionats = [...dinarsTriats, ...soparsTriats].map(cb => cb.value);
             
-            // Netejar duplicats (ex: si han seleccionat Vichissoisse tant a dinar com a sopar)
             const seleccionatsUnics = [...new Set(seleccionats)];
             
             if (seleccionats.length !== apatsObjectiu) {
@@ -412,7 +477,6 @@
             let receptesHtml = '';
 
             seleccionatsUnics.forEach(apat => {
-                // Calcular quantitats pel súper
                 if (receptariEstructurat[apat]) {
                     
                     let targetaRecepta = `
@@ -425,7 +489,6 @@
                     receptariEstructurat[apat].forEach(ing => {
                         let nom = ing.nom;
                         
-                        // Si s'ha triat l'àpat 2 cops (dinar i sopar), multipliquem x2
                         let quantitatAparicions = seleccionats.filter(x => x === apat).length;
                         let quantitat = ing.quantitat * multiplicador * quantitatAparicions;
                         
@@ -437,7 +500,6 @@
                         if (ing.quantitat === 0) {
                             targetaRecepta += `<li>${nom}</li>`;
                         } else {
-                            // La recepta escrita s'adapta només per a la ració d'un àpat (x persones), no es dobla si es menja 2 cops
                             let quantitatPerRecepta = Math.round((ing.quantitat * multiplicador) * 10) / 10; 
                             if (ing.unitat === "u") {
                                 targetaRecepta += `<li><strong>${quantitatPerRecepta}</strong> ${nom}</li>`;
@@ -467,7 +529,6 @@
                 }
             });
 
-            // Llista definitiva
             let html = '<ul>';
             
             if (esmorzars > 0) {
