@@ -75,8 +75,13 @@
         @media (min-width: 768px) { .menu-schedule { flex-direction: row; flex-wrap: wrap; } }
         .menu-day { background: white; border-radius: 8px; padding: 15px; border-left: 5px solid #3498db; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1; min-width: 220px;}
         .day-title { font-weight: bold; color: #2c3e50; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 6px; font-size: 1.1em;}
-        .day-meals { display: flex; flex-direction: column; gap: 6px; }
-        .day-meals div { font-size: 15px; }
+        .day-meals { display: flex; flex-direction: column; }
+        .meal-row { display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 8px 10px; border-radius: 6px; margin-top: 3px; font-size: 15px; border: 1px solid #f1f2f6; }
+        
+        /* Botó Reroll */
+        .reroll-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; color: #3498db; transition: transform 0.3s, color 0.2s; padding: 0 5px; }
+        .reroll-btn:hover { transform: rotate(180deg); color: #2980b9; }
+        .reroll-btn:active { transform: rotate(360deg) scale(0.9); }
         
         .btn { background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: background 0.3s; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);}
         .btn:hover { background: #2ecc71; }
@@ -135,7 +140,7 @@
         </div>
 
         <div class="random-container">
-            <button class="btn-random" onclick="triarAleatori()">🎲 RANDOM </button>
+            <button class="btn-random" onclick="triarAleatori()">🎲 RANDOM</button>
         </div>
 
         <div id="estatTriat" class="status-msg">
@@ -171,7 +176,7 @@
     </div>
 
     <script>
-        // Dades Estructurades (Ingredients per sumar i adaptar matemàticament)
+        // Dades Estructurades
         const receptariEstructurat = {
             "Trinxat": [
                 { nom: "cols d’hivern mitjanes", quantitat: 1, unitat: "u" },
@@ -389,13 +394,45 @@
             actualitzarVisualitzadorMenu();
         }
 
+        // Nova funció per canviar un àpat des del visualitzador
+        function canviarApatIndividual(tipus, apatActual) {
+            const llistaCompleta = tipus === 'dinar' ? llistaDinars : llistaSopars;
+            const selector = tipus === 'dinar' ? '#mealContainerDinars' : '#mealContainerSopars';
+            
+            // Desmarquem el plat actual
+            if (apatActual) {
+                const cbActual = document.querySelector(`${selector} input[value="${apatActual}"]`);
+                if (cbActual) cbActual.checked = false;
+            }
+
+            // Mirem quins plats queden lliures (que no estiguin ja marcats)
+            const seleccionats = Array.from(document.querySelectorAll(`${selector} input:checked`)).map(cb => cb.value);
+            const disponibles = llistaCompleta.filter(apat => !seleccionats.includes(apat));
+
+            if (disponibles.length > 0) {
+                // Triem un nou plat a l'atzar
+                const nouApat = disponibles[Math.floor(Math.random() * disponibles.length)];
+                const cbNou = document.querySelector(`${selector} input[value="${nouApat}"]`);
+                if (cbNou) cbNou.checked = true;
+            } else {
+                alert("No queden més plats d'aquest tipus a la llista!");
+                // Tornem a marcar el que hi havia per no desquadrar res
+                if (apatActual) {
+                    const cbActual = document.querySelector(`${selector} input[value="${apatActual}"]`);
+                    if (cbActual) cbActual.checked = true;
+                }
+            }
+
+            actualitzarEstat(); // Es refrescarà el visualitzador automàticament
+        }
+
         function actualitzarVisualitzadorMenu() {
             const dinarsTriats = Array.from(document.querySelectorAll('#mealContainerDinars input:checked')).map(cb => cb.value);
             const soparsTriats = Array.from(document.querySelectorAll('#mealContainerSopars input:checked')).map(cb => cb.value);
             const visualitzadorDiv = document.getElementById('menuVisualitzador');
 
             if (dinarsTriats.length === 0 && soparsTriats.length === 0) {
-                visualitzadorDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic; text-align: center; margin-bottom: 20px;">Tria àpats de les llistes o fes clic a "Menú Aleatori" per veure aquí la proposta.</p>';
+                visualitzadorDiv.innerHTML = '<p style="color: #7f8c8d; font-style: italic; text-align: center; margin-bottom: 20px;">Tria àpats de les llistes o fes clic a "RANDOM" per veure aquí la proposta.</p>';
                 return;
             }
 
@@ -403,15 +440,33 @@
             let html = '<div class="menu-schedule">';
 
             for (let i = 0; i < maxDies; i++) {
-                let dinarText = dinarsTriats[i] || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots menjar fora)</span>';
-                let soparText = soparsTriats[i] || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots sopar a fora)</span>';
+                let dinarApat = dinarsTriats[i];
+                let soparApat = soparsTriats[i];
+                
+                let dinarText = dinarApat || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots menjar fora)</span>';
+                let soparText = soparApat || '<span style="color:#bdc3c7; font-style: italic;">Lliure (Pots sopar a fora)</span>';
+
+                // Escapar cometes simples perquè no trenquin la funció JS de botó
+                let dinarValueEscaped = dinarApat ? dinarApat.replace(/'/g, "\\'") : '';
+                let soparValueEscaped = soparApat ? soparApat.replace(/'/g, "\\'") : '';
+
+                let btnDinar = dinarApat ? `<button class="reroll-btn" onclick="canviarApatIndividual('dinar', '${dinarValueEscaped}')" title="Canviar per un altre plat">🔄</button>` : '';
+                let btnSopar = soparApat ? `<button class="reroll-btn" onclick="canviarApatIndividual('sopar', '${soparValueEscaped}')" title="Canviar per un altre plat">🔄</button>` : '';
 
                 html += `
                     <div class="menu-day">
                         <div class="day-title">🗓️ Dia ${i + 1}</div>
                         <div class="day-meals">
-                            <div><strong>🥘 Dinar:</strong><br>${dinarText}</div>
-                            <div style="margin-top:5px;"><strong>🍲 Sopar:</strong><br>${soparText}</div>
+                            <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 2px;">🥘 Dinar:</div>
+                            <div class="meal-row">
+                                <span>${dinarText}</span>
+                                ${btnDinar}
+                            </div>
+                            <div style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 2px; margin-top: 8px;">🍲 Sopar:</div>
+                            <div class="meal-row">
+                                <span>${soparText}</span>
+                                ${btnSopar}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -424,10 +479,8 @@
             const apatsObjectiu = parseInt(document.getElementById('numApats').value) || 0;
             if (apatsObjectiu <= 0) return;
 
-            // Buidem qualsevol selecció prèvia
             document.querySelectorAll('.meal-item input[type="checkbox"]').forEach(cb => cb.checked = false);
 
-            // Repartim equitativament entre dinars i sopars
             const meitatDinars = Math.ceil(apatsObjectiu / 2);
             const meitatSopars = Math.floor(apatsObjectiu / 2);
 
@@ -439,7 +492,6 @@
             const dinarsAleatoris = triarN(llistaDinars, meitatDinars);
             const soparsAleatoris = triarN(llistaSopars, meitatSopars);
             
-            // Marquem les caselles corresponents
             dinarsAleatoris.forEach(apat => {
                 const cb = document.querySelector(`#mealContainerDinars input[value="${apat}"]`);
                 if (cb) cb.checked = true;
