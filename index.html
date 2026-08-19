@@ -26,68 +26,92 @@
         
         .generator-box { background: #e8f4f8; border-left: 5px solid #3498db; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
         
-        .inputs-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .inputs-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
         @media (min-width: 768px) { .inputs-container { flex-direction: row; flex-wrap: wrap; } }
         
-        .input-group { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #bdc3c7; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: 1;}
-        .input-group input { width: 60px; padding: 8px; text-align: center; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        .input-group { background: white; padding: 12px 15px; border-radius: 8px; border: 1px solid #bdc3c7; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        
+        /* Estils dels botons + i - */
+        .stepper-container { display: flex; align-items: center; background: #f1f2f6; border-radius: 8px; padding: 4px; }
+        .stepper-btn { 
+            background: white; color: #2c3e50; border: 1px solid #dcdde1; 
+            border-radius: 6px; width: 38px; height: 38px; 
+            font-size: 22px; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: background 0.1s;
+            user-select: none;
+        }
+        .stepper-btn:active { background: #e8e8e8; transform: scale(0.95); }
+        .input-group input[type="number"] {
+            width: 40px; text-align: center; font-size: 18px; 
+            border: none; background: transparent; font-weight: bold; color: #2c3e50;
+            -moz-appearance: textfield; pointer-events: none;
+        }
+        .input-group input[type="number"]::-webkit-outer-spin-button,
+        .input-group input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none; margin: 0;
+        }
         
         .status-msg { font-weight: bold; padding: 12px; border-radius: 5px; background: #ffeaa7; color: #d35400; text-align: center; margin-bottom: 15px; border: 1px solid #fdcb6e; }
         .status-msg.ok { background: #dff9fb; color: #27ae60; border-color: #badc58; }
 
         .meal-list { display: flex; flex-direction: column; gap: 8px; max-height: 350px; overflow-y: auto; background: white; padding: 10px; border: 1px solid #bdc3c7; border-radius: 5px; }
         
-        /* Disseny especial per fer els botons fàcils de tocar amb el dit al mòbil */
         .meal-item label { 
             cursor: pointer; display: flex; align-items: center; gap: 12px; 
             padding: 15px 12px; margin-bottom: 2px; 
             background: #fbfbfb; border: 1px solid #eef2f3; border-radius: 8px; 
             transition: background 0.2s, border-color 0.2s;
-            font-size: 16px;
+            font-size: 16px; user-select: none;
         }
         .meal-item label:hover, .meal-item input:checked + label { background: #f1f2f6; border-color: #3498db; }
         .meal-item input[type="checkbox"] { transform: scale(1.4); margin-right: 5px; }
         
-        .btn { background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; transition: background 0.3s; }
+        .btn { background: #27ae60; color: white; border: none; padding: 15px 20px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; transition: background 0.3s; box-shadow: 0 4px 6px rgba(39, 174, 96, 0.2);}
         .btn:hover { background: #2ecc71; }
-        .btn-print { background: #34495e; margin-top: 15px; display: inline-flex; justify-content: center; align-items: center; }
-        .btn-print:hover { background: #2c3e50; }
         
         .shopping-list { background: #fff3e0; padding: 20px; border-radius: 8px; border: 2px dashed #e67e22; margin-top: 20px; display: none; }
-        .shopping-list ul { list-style-type: none; padding-left: 0; }
+        .shopping-list ul { list-style-type: none; padding-left: 0; margin-bottom: 0;}
         .shopping-list li { border-bottom: 1px solid #f39c12; padding: 12px 0; font-size: 16px; }
+        .shopping-list li:last-child { border-bottom: none; padding-bottom: 0; }
         .shopping-list li:before { content: "🛒 "; }
         .shopping-list li.esmorzar:before { content: "🍞 "; }
 
         .recipe-card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #e67e22; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #shoppingListOutput, #shoppingListOutput * { visibility: visible; }
-            #shoppingListOutput { position: absolute; left: 0; top: 0; width: 100%; border: none; background: white; }
-            .no-print { display: none !important; }
-        }
     </style>
 </head>
 <body>
-    <h1 class="no-print">Llibre d'Àpats i Receptes</h1>
+    <h1>Llibre d'Àpats i Receptes</h1>
 
     <!-- GENERADOR DE MENÚS -->
-    <div class="generator-box no-print">
+    <div class="generator-box">
         <h2 style="margin-top:0;">🛒 Generador de Llista de la Compra</h2>
         
         <div class="inputs-container">
             <div class="input-group">
-                <label for="numPersones">👥 <strong>Persones:</strong></label>
-                <input type="number" id="numPersones" value="4" min="1" onchange="actualitzarEstat()">
+                <label>👥 <strong>Persones:</strong></label>
+                <div class="stepper-container">
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numPersones', -1)">-</button>
+                    <input type="number" id="numPersones" value="4" min="1" readonly>
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numPersones', 1)">+</button>
+                </div>
             </div>
             <div class="input-group">
-                <label for="numEsmorzars">☕ <strong>Esmorzars a fer:</strong></label>
-                <input type="number" id="numEsmorzars" value="2" min="0" onchange="actualitzarEstat()">
+                <label>☕ <strong>Esmorzars:</strong></label>
+                <div class="stepper-container">
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numEsmorzars', -1)">-</button>
+                    <input type="number" id="numEsmorzars" value="2" min="0" readonly>
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numEsmorzars', 1)">+</button>
+                </div>
             </div>
             <div class="input-group">
-                <label for="numApats">🍽️ <strong>Total Dinars+Sopars:</strong></label>
-                <input type="number" id="numApats" value="4" min="1" onchange="actualitzarEstat()">
+                <label>🍽️ <strong>Total Àpats:</strong></label>
+                <div class="stepper-container">
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numApats', -1)">-</button>
+                    <input type="number" id="numApats" value="4" min="1" readonly>
+                    <button type="button" class="stepper-btn" onclick="canviarValor('numApats', 1)">+</button>
+                </div>
             </div>
         </div>
 
@@ -111,14 +135,13 @@
         <div id="shoppingListOutput" class="shopping-list">
             <h3 style="margin-top:0;">📝 Llista de la Compra Única</h3>
             <div id="shoppingListContent"></div>
-            <button class="btn btn-print no-print" onclick="window.print()">🖨️ Imprimir Llista per anar al Súper</button>
         </div>
     </div>
 
     <!-- RECEPTES COMPLETES AMB PASSOS -->
-    <h2 class="no-print">Receptes detallades</h2>
+    <h2>Receptes detallades</h2>
     
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Trinxat</h3>
         <h4>Ingredients:</h4>
         <ul><li>1 col d’hivern (o col verda) mitjana</li><li>4-5 patates mitjanes</li><li>150-200 g de cansalada (amb o sense veta)</li><li>100 g de bacon</li><li>1 botifarra negra</li><li>Oli d’oliva verge extra, sal i pebre</li></ul>
@@ -132,7 +155,7 @@
         </ol>
     </div>
 
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Mongetes amb rossellones</h3>
         <h4>Ingredients:</h4>
         <ul><li>1 pot de mongetes blanques</li><li>500 g de rossellones fresques</li><li>3-4 grans d’all</li><li>150 ml de vi blanc</li><li>Oli d’oliva verge extra, sal</li></ul>
@@ -146,7 +169,7 @@
         </ol>
     </div>
 
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Sípia amb patates</h3>
         <h4>Ingredients:</h4>
         <ul><li>1 kg de sípia neta</li><li>5 patates</li><li>1 ceba gran, 3 grans d'all, 1 tomàquet madur, 1 fulla de llorer</li><li>150 ml de vi blanc i 700 ml de brou</li></ul>
@@ -160,7 +183,7 @@
         </ol>
     </div>
 
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Carn amb albergínia</h3>
         <h4>Ingredients:</h4>
         <ul><li>750g de Llata de vedella</li><li>1 albergínia</li><li>Ceba picada i tomàquet ratllat</li></ul>
@@ -173,7 +196,7 @@
         </ol>
     </div>
 
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Arròs integral</h3>
         <h4>Ingredients:</h4>
         <ul><li>1 pebrot vermell, 1 verd, 1 ceba/porro, 2 pastanagues, 2 carxofes, bolets, 1 gra d'all.</li><li>4.5 tasses d’arròs integral.</li><li>Cacauets, tomàquet fregit, Curry, comí.</li></ul>
@@ -187,7 +210,7 @@
         </ol>
     </div>
 
-    <div class="recipe-card no-print">
+    <div class="recipe-card">
         <h3>Amanida de cigrons amb salsa de iogurt</h3>
         <h4>Ingredients:</h4>
         <ul><li>2 pots de cigrons, 180g rúcula/espinacs, 4 tomàquets, 1 cogombre, olives, llavors.</li><li>160g de Feta, 650g de pollastre.</li><li>Salsa: 2 iogurts naturals, llimona, oli, comí/orenga.</li></ul>
@@ -272,6 +295,19 @@
             "Espinacs amb panses", "Mongeta verda amb carn picada", "Crema de verdures", "Verdures al forn", 
             "Sopa", "Sopa de bolets", "Pizzes", "Escalivada", "Truita francesa", "Truita de ceba", "Truita de carbassó/carxofa", "Mongeta plana amb patates"
         ];
+
+        // Funció per als botons de + i -
+        function canviarValor(idInput, variacio) {
+            const input = document.getElementById(idInput);
+            let valorActual = parseInt(input.value);
+            const min = parseInt(input.getAttribute('min'));
+            
+            let nouValor = valorActual + variacio;
+            if (nouValor >= min) {
+                input.value = nouValor;
+                actualitzarEstat();
+            }
+        }
 
         function renderitzarLlistes() {
             const contenidorDinars = document.getElementById('mealContainerDinars');
