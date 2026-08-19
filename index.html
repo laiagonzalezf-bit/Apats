@@ -78,20 +78,13 @@
         .recipe-card { background: white; padding: 25px; margin-bottom: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-left: 5px solid #e67e22; }
         .recipe-card ul, .recipe-card ol { padding-left: 20px; }
         .recipe-card li { margin-bottom: 8px; }
-
-        @media print {
-            body * { visibility: hidden; }
-            #shoppingListOutput, #shoppingListOutput * { visibility: visible; }
-            #shoppingListOutput { position: absolute; left: 0; top: 0; width: 100%; border: none; background: white; }
-            .no-print { display: none !important; }
-        }
     </style>
 </head>
 <body>
-    <h1 class="no-print">Llibre d'Àpats i Receptes</h1>
+    <h1>Llibre d'Àpats i Receptes</h1>
 
     <!-- GENERADOR DE MENÚS -->
-    <div class="generator-box no-print">
+    <div class="generator-box">
         <h2 style="margin-top:0;">🛒 Generador de Llista de la Compra</h2>
         
         <div class="inputs-container">
@@ -146,7 +139,7 @@
 
     <!-- CONTENIDOR DINÀMIC PER A LES RECEPTES -->
     <div id="recipesOutputContainer" style="display: none;">
-        <h2 class="no-print">Receptes seleccionades</h2>
+        <h2>Receptes seleccionades</h2>
         <div id="recipesOutput"></div>
     </div>
 
@@ -210,53 +203,64 @@
             ]
         };
 
-        // Ara només guardem els passos estètics, els ingredients es calculen!
+        // Passos originals de l'Excel, fidels a com s'havien escrit
         const passosReceptes = {
             "Trinxat": `
                 <ol>
-                    <li>Preparar les verdures: Renta bé la col i treu-ne les fulles externes. Talla-la en trossos grans. Pela les patates a daus grossos.</li>
-                    <li>Bullir: En una olla amb aigua salada, bull la col i les patates 20-25 minuts. Escorre-les.</li>
-                    <li>Sofregit: Talla la cansalada i el bacon. En una paella gran, daura'ls amb oli. Afegeix la botifarra negra a trossos i cuina uns minuts.</li>
-                    <li>Trinxar: Afegeix les patates i la col a la paella i aixafa-ho tot amb una forquilla.</li>
-                    <li>Daurar: Pressiona la barreja per fer una crosta cruixent a sota.</li>
+                    <li>1. Preparar les verdures: Renta bé la col i treu-ne les fulles més externes si són dures o brutes. Talla-la en trossos grans. Pela les patates i talla-les a daus grossos.</li>
+                    <li>2. Bullir les verdures: En una olla gran amb aigua salada, bull la col i les patates juntes durant uns 20-25 minuts, fins que estiguin ben tendres. Escorre-les i reserva-les.</li>
+                    <li>3. Preparar el sofregit de carn: Talla la cansalada i el bacon a daus petits. En una paella gran, escalfa una mica d’oli d’oliva. Fes primer la cansalada i el bacon a foc mitjà fins que estiguin daurats i cruixents. Afegeix la botifarra negra tallada a trossos i remena bé fins que quedi integrada amb el bacon i la cansalada. Cuina-ho tot uns minuts més perquè els sabors es barregin.</li>
+                    <li>4. Trinxar: A la mateixa paella, afegeix les patates i la col bullides. Amb una forquilla o una espàtula, aixafa i barreja les verdures amb el sofregit de carn fins a obtenir una textura homogènia, amb els ingredients ben integrats.</li>
+                    <li>5. Daurar el trinxat: Pressiona lleugerament la barreja a la paella per formar una capa lleugerament cruixent a sota. Deixa-la daurar uns minuts i gira-la amb compte en porcions o remenant si prefereixes.</li>
                 </ol>`,
             "Mongetes amb rossellones": `
                 <ol>
-                    <li>Rentar el pot de mongetes per treure l'espumeta.</li>
-                    <li>Triturar l'all ben petit i posar-lo en una paella amb oli en fred.</li>
-                    <li>Posar les rossellones amb aigua i sal per netejar-les. Tirar les petxines a l’oli calent.</li>
-                    <li>Tirar el vi blanc. Tapar i deixar obrir al vapor.</li>
-                    <li>Afegir les mongetes, remenar i deixar coure una estona.</li>
+                    <li>Rentar pot mongetes, espumeta, etc.</li>
+                    <li>Agafar oli i triturar all (3 o 4 tallats molt petitets) posar l'all en fred.</li>
+                    <li>Posar les rossellones amb aigua i sal, mirar si alguna esta oberta o buida.</li>
+                    <li>Tirar petxines crues a l’oli amb all.</li>
+                    <li>Tirar menys d'un quart d’ampolla de vi.</li>
+                    <li>Tapar i deixar que s’obrin les petxines amb el vapor.</li>
+                    <li>Tirar les mongetes i remenar una mica i al cap d’una mica ho deixo una estona.</li>
                 </ol>`,
             "Sípia amb patates": `
                 <ol>
-                    <li>Segellar la sípia a foc fort 2-3 minuts. Retira i reserva.</li>
-                    <li>Fer el sofregit amb la ceba i l’all picats. Afegir el tomàquet ratllat i coure 5 minuts.</li>
-                    <li>Incorporar la sípia, el llorer i el vi blanc. Evaporar 5 minuts.</li>
-                    <li>Afegir les patates "esquerdades" i el brou just per cobrir.</li>
-                    <li>Coure a foc suau 25-30 minuts. Rectificar de sal i afegir julivert.</li>
+                    <li>1. Segellar la sípia (opcional però recomanat): En una paella amb oli ben calent, daura la sípia a foc fort 2-3 minuts fins que deixi anar aigua i agafi una mica de color. Retira-la i reserva-la.</li>
+                    <li>2. Fer el sofregit: Sofregeix la ceba i l’all picats amb oli fins que quedin transparents. Afegeix el tomàquet ratllat i deixa coure 5 minuts fins que es redueixi.</li>
+                    <li>3. Coure la sípia: Incorpora la sípia reservada al sofregit i barreja bé. Afegeix la fulla de llorer i el vi blanc, i deixa evaporar 5 minuts.</li>
+                    <li>4. Afegir les patates i el brou: Pela i “esquerda” les patates perquè deixin anar midó. Afegeix-les a la cassola i cobreix amb brou de peix o aigua (uns 700 ml, just per cobrir).</li>
+                    <li>5. Cocció final: Deixa coure a foc suau 25-30 minuts, fins que les patates estiguin tendres i la sípia melosa.</li>
+                    <li>6. Ajustar i servir: Rectifica de sal i pebre. Espolsa una mica de julivert picat abans de servir.</li>
                 </ol>`,
             "Carn amb albergínia": `
                 <ol>
-                    <li>Sala, enfarina i fregeix la carn per segellar-la. Reserva.</li>
-                    <li>Talla l'albergínia, sala per treure aigua, enfarina i fregeix. Reserva.</li>
-                    <li>Fes un sofregit amb la ceba i el tomàquet a foc suau.</li>
-                    <li>Incorpora la carn, cobreix d'aigua i cou 20-30 minuts. Afegeix l'albergínia 15 minuts més.</li>
+                    <li>1. Preparar la carn: Sala i enfarina la carn lleugerament. Fregeix-la a foc viu fins a segellar-la, sense coure-la del tot. Reserva.</li>
+                    <li>2. Preparar l’albergínia: Talla l’albergínia a rodanxes, sala-la i deixa-la reposar 5 minuts perquè tregui aigua. Eixuga-la amb paper de cuina, enfarina-la i fregeix-la en oli calent. Un cop fregida, posa-la sobre paper absorbent per treure l’excés d’oli.</li>
+                    <li>3. Fer el sofregit: En una cassola, sofregeix la ceba picada a foc suau fins que estigui transparent. Afegeix-hi el tomàquet ratllat (o tomàquet fregit de llauna) i cuina-ho fins que estigui ben fet.</li>
+                    <li>4. Cocció: Incorpora la carn a la cassola i cobreix amb aigua (sense passar-se, més val anar-ne afegint si cal). Cuina a foc baix durant uns 20-30 minuts, remenant de tant en tant per evitar que s’enganxi. Afegeix-hi les rodanxes d’albergínia i deixa-ho coure 15 minuts més.</li>
                 </ol>`,
             "Arròs integral": `
                 <ol>
-                    <li>Tallar totes les verdures (carxofes amb llimona perquè no s'oxidin).</li>
-                    <li>Fer el sofregit començant per la ceba i l'all. Tirar bastant curry.</li>
-                    <li>Rentar l'arròs integral i afegir-lo al sofregit perquè fregeixi una mica.</li>
-                    <li>Tirar aigua calenta (3 mides d'aigua per tassa d'arròs).</li>
-                    <li>Bullir a foc lent i apagar quan quedi poc líquid per deixar-lo reposar.</li>
+                    <li>Tallar ceba petita.</li>
+                    <li>Tallar carxofa com grills de taronja, llesques. Es tallen les puntes de dalt. Es poden aprofitar els tronxos si es pelen una mica (si no queden amargs). Treure perrufles. Es pot posar una mica de llimona perquè no s’oxidin.</li>
+                    <li>Es tallen els xampinyons pim pam pum, en 4 trossos.</li>
+                    <li>Es fa un sofregit. Si es posa carbassó i bròquil es posen junts al final. La coliflor (opcional) són 3 minutets.</li>
+                    <li>Primer la ceba, s’afegeixen les altres verdures.</li>
+                    <li>Quan s’està acabant de fer, es tira bastant de curry.</li>
+                    <li>Si està soso es pot tirar una mica de pastilla de caldo.</li>
+                    <li>L’arròs integral millor rentar-lo per treure el midó.</li>
+                    <li>Es tira l’arròs al sofregit, es remena i fregeix una miqueta. Quan xisporroteja una mica es tira aigua calenta (bullint) per anar-lo fent. 3 d'aigua per cada tassa d’arròs.</li>
+                    <li>Quan ja està bullint, no remenar-lo massa.</li>
+                    <li>Quan estigui amb molt poc líquid i una mica cruet, s’apaga. Si està massa cru, tapar-lo.</li>
                 </ol>`,
             "Amanida de cigrons amb salsa de iogurt": `
                 <ol>
-                    <li>Salsa: Barreja iogurt, llimona, oli, espècies, sal i pebre. Reserva a la nevera.</li>
-                    <li>Marinada: Condimenta el pollastre i reposa 5 minuts. Talla totes les verdures.</li>
-                    <li>Cuinar el pollastre a la paella en 2 tandes (3-4 minuts per costat).</li>
-                    <li>Muntar bowls amb base verda, cigrons, verdures, llavors i el pollastre/feta a dalt.</li>
+                    <li>1. Salsa: barreja iogurt, llimona, oli, espècia, sal i pebre (i all si vols). Reserva a la nevera.</li>
+                    <li>2. Marinat exprés: combina el pollastre amb el condiment escollit, sal i pebre. Deixa-ho reposar 5’ mentre preps verdures.</li>
+                    <li>3. Verdures: esbandeix els cigrons; talla tomàquet, cogombre i pebrot a daus; prepara les olives.</li>
+                    <li>4. Cuina el pollastre: paella ben calenta amb un rajolí d’oli. Fes-ho en 2 tandes perquè no bulli: 3–4’ per costat fins a estar cuit. Reposa 2–3’ i talla a tires.</li>
+                    <li>5. Munta els bowls: base de verds (i cereals si n’hi poses) + cigrons + verdures + olives + llavors. A sobre, pollastre i feta (o alvocat).</li>
+                    <li>6. Amaneix i serveix: reparteix la salsa i acaba amb pebre negre i una mica de ratlladura de llimona.</li>
                 </ol>`
         };
 
@@ -355,7 +359,7 @@
                     
                     // Comencem a construir la targeta de la recepta adaptada
                     let targetaRecepta = `
-                        <div class="recipe-card no-print">
+                        <div class="recipe-card">
                             <h3>${apat} <span style="font-size:0.6em; color:#7f8c8d; font-weight:normal;">(Per a ${persones} persones)</span></h3>
                             <h4>Ingredients necessaris:</h4>
                             <ul>
@@ -386,7 +390,7 @@
 
                     targetaRecepta += `</ul>`;
 
-                    // Afegir els passos de preparació si n'hi ha
+                    // Afegir els passos de preparació originals
                     if (passosReceptes[apat]) {
                         targetaRecepta += `<h4>Passos a seguir:</h4>${passosReceptes[apat]}`;
                     }
@@ -399,7 +403,7 @@
                     
                     // Si no hi ha recepta detallada, fem una targeta buida només pel títol
                     receptesHtml += `
-                        <div class="recipe-card no-print">
+                        <div class="recipe-card">
                             <h3>${apat}</h3>
                             <p><em>No hi ha quantitats exactes ni instruccions per a aquesta recepta. Caldrà fer-la a ull.</em></p>
                         </div>`;
